@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../home/home_page.dart';
 import 'login.dart';
 
 class Signup extends StatefulWidget {
@@ -12,12 +11,17 @@ class Signup extends StatefulWidget {
 }
 
 class _SignupState extends State<Signup> {
+  SignUp() async {}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+        body: ListView(
+      physics: const BouncingScrollPhysics(),
       children: [
+        const SizedBox(
+          height: 100,
+        ),
         Center(
           child: Image.asset(
             'assets/images/owl.png',
@@ -31,6 +35,7 @@ class _SignupState extends State<Signup> {
               child: Column(
             children: [
               TextFormField(
+                onChanged: (newValue) {},
                 decoration: const InputDecoration(
                     border:
                         OutlineInputBorder(borderSide: BorderSide(width: 1)),
@@ -51,6 +56,7 @@ class _SignupState extends State<Signup> {
                 height: 20,
               ),
               TextFormField(
+                onChanged: (newValue) {},
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(borderSide: BorderSide(width: 1)),
                   hintText: 'password',
@@ -78,9 +84,7 @@ class _SignupState extends State<Signup> {
               ),
               Container(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, HomePage.homePage);
-                  },
+                  onPressed: () async {},
                   child: const Text(
                     'Sign Up',
                     style: TextStyle(fontSize: 20),

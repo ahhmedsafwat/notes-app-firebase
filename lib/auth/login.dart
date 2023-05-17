@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:notes/auth/signup.dart';
 
@@ -12,6 +13,8 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  String? emailAddress;
+  String? password;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,6 +34,9 @@ class _LoginState extends State<Login> {
               child: Column(
             children: [
               TextFormField(
+                onChanged: (newValue) {
+                  emailAddress = newValue;
+                },
                 decoration: const InputDecoration(
                     border:
                         OutlineInputBorder(borderSide: BorderSide(width: 1)),
@@ -41,6 +47,9 @@ class _LoginState extends State<Login> {
                 height: 20,
               ),
               TextFormField(
+                onChanged: (newValue) {
+                  password = newValue;
+                },
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(borderSide: BorderSide(width: 1)),
                   hintText: 'password',
@@ -65,8 +74,20 @@ class _LoginState extends State<Login> {
               ),
               Container(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, HomePage.homePage);
+                  onPressed: () async {
+                    try {
+                      final credential = await FirebaseAuth.instance
+                          .signInWithEmailAndPassword(
+                              email: emailAddress!, password: password!);
+                      Navigator.pushReplacementNamed(
+                          context, HomePage.homePage);
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'user-not-found') {
+                        print('No user found for that email.');
+                      } else if (e.code == 'wrong-password') {
+                        print('Wrong password provided for that user.');
+                      }
+                    }
                   },
                   child: const Text(
                     'Login',
