@@ -11,8 +11,16 @@ class Signup extends StatefulWidget {
 }
 
 class _SignupState extends State<Signup> {
+  String? password, email, username;
   GlobalKey<FormState> formState = GlobalKey<FormState>();
-  SignUp() async {}
+  SignUp() async {
+    var formData = formState.currentState;
+    if (formData!.validate()) {
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('not vaild')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +45,15 @@ class _SignupState extends State<Signup> {
               child: Column(
                 children: [
                   TextFormField(
+                    validator: (value) {
+                      if (value!.length > 100) {
+                        return 'email is too long';
+                      }
+                      if (value.length < 4) {
+                        return 'email is too short';
+                      }
+                      return null;
+                    },
                     onChanged: (newValue) {},
                     decoration: const InputDecoration(
                         border: OutlineInputBorder(
@@ -52,9 +69,10 @@ class _SignupState extends State<Signup> {
                       if (value!.length > 100) {
                         return 'username is too long';
                       }
-                      if (value.length > 4) {
+                      if (value.length < 4) {
                         return 'username is too short';
                       }
+                      return null;
                     },
                     decoration: const InputDecoration(
                       border:
@@ -67,6 +85,15 @@ class _SignupState extends State<Signup> {
                     height: 20,
                   ),
                   TextFormField(
+                    validator: (value) {
+                      if (value!.length > 100) {
+                        return 'password is too long';
+                      }
+                      if (value.length < 6) {
+                        return 'password is too short';
+                      }
+                      return null;
+                    },
                     onChanged: (newValue) {},
                     decoration: const InputDecoration(
                       border:
@@ -96,7 +123,9 @@ class _SignupState extends State<Signup> {
                   ),
                   Container(
                     child: ElevatedButton(
-                      onPressed: () async {},
+                      onPressed: () async {
+                        await SignUp();
+                      },
                       child: const Text(
                         'Sign Up',
                         style: TextStyle(fontSize: 20),
