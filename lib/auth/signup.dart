@@ -1,3 +1,5 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'login.dart';
@@ -16,9 +18,32 @@ class _SignupState extends State<Signup> {
   SignUp() async {
     var formData = formState.currentState;
     if (formData!.validate()) {
+      try {
+        final credential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email!,
+          password: password!,
+        );
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'weak-password') {
+          AwesomeDialog(
+            context: context,
+            title: 'weak password',
+            body: const Text('the password you provided is too weak'),
+          );
+        } else if (e.code == 'email-already-in-use') {
+          AwesomeDialog(
+              context: context,
+              title: 'email already exists',
+              body: const Text(
+                  'the email you are trying to sign up with already exists '));
+        }
+      } catch (e) {
+        print(e);
+      }
     } else {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('not vaild')));
+          .showSnackBar(const SnackBar(content: Text('not vaild')));
     }
   }
 
@@ -54,7 +79,9 @@ class _SignupState extends State<Signup> {
                       }
                       return null;
                     },
-                    onChanged: (newValue) {},
+                    onSaved: (newValue) {
+                      email = newValue;
+                    },
                     decoration: const InputDecoration(
                         border: OutlineInputBorder(
                             borderSide: BorderSide(width: 1)),
@@ -65,6 +92,9 @@ class _SignupState extends State<Signup> {
                     height: 20,
                   ),
                   TextFormField(
+                    onSaved: (newValue) {
+                      username = newValue;
+                    },
                     validator: (value) {
                       if (value!.length > 100) {
                         return 'username is too long';
@@ -94,7 +124,9 @@ class _SignupState extends State<Signup> {
                       }
                       return null;
                     },
-                    onChanged: (newValue) {},
+                    onSaved: (newValue) {
+                      password = newValue;
+                    },
                     decoration: const InputDecoration(
                       border:
                           OutlineInputBorder(borderSide: BorderSide(width: 1)),
