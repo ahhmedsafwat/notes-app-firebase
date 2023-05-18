@@ -1,3 +1,5 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../cred/add_notes.dart';
@@ -11,6 +13,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   List notes = [
     {
       'note': 'Read a book for 10 minute without any rests',
@@ -33,6 +39,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () async {
+            await signOut();
+          },
+          icon: Icon(Icons.exit_to_app),
+        ),
         title: const Text("Home Page"),
       ),
       floatingActionButton: FloatingActionButton(

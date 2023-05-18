@@ -1,6 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:notes/home/home_page.dart';
 
 import 'login.dart';
 
@@ -18,32 +19,43 @@ class _SignupState extends State<Signup> {
   SignUp() async {
     var formData = formState.currentState;
     if (formData!.validate()) {
+      formData.save();
       try {
         final credential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email!,
           password: password!,
         );
+        return credential;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           AwesomeDialog(
             context: context,
             title: 'weak password',
-            body: const Text('the password you provided is too weak'),
-          );
+            desc: 'the password you provided is too weak',
+            btnCancelOnPress: () {},
+            btnOkOnPress: () {},
+          ).show();
         } else if (e.code == 'email-already-in-use') {
           AwesomeDialog(
-              context: context,
-              title: 'email already exists',
-              body: const Text(
-                  'the email you are trying to sign up with already exists '));
+            context: context,
+            title: 'email already exists',
+            desc: 'the email you are trying to sign up with already exists',
+            btnCancelOnPress: () {},
+            btnOkOnPress: () {},
+          ).show();
         }
       } catch (e) {
         print(e);
       }
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('not vaild')));
+      AwesomeDialog(
+        context: context,
+        btnCancelOnPress: () {},
+        btnOkOnPress: () {},
+        desc: 'something went wrong please try again',
+        title: 'something went wrong',
+      ).show();
     }
   }
 
@@ -156,7 +168,11 @@ class _SignupState extends State<Signup> {
                   Container(
                     child: ElevatedButton(
                       onPressed: () async {
-                        await SignUp();
+                        UserCredential? response = await SignUp();
+                        if (response != null) {
+                          Navigator.pushReplacementNamed(
+                              context, HomePage.homePage);
+                        }
                       },
                       child: const Text(
                         'Sign Up',
