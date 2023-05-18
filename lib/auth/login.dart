@@ -1,5 +1,7 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:notes/auth/signup.dart';
 
 import '../home/home_page.dart';
@@ -13,8 +15,39 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  String? emailAddress;
-  String? password;
+  String? emailAddress, password;
+
+  GlobalKey<FormState> formState = GlobalKey<FormState>();
+
+  logIn() async {
+    if (formState.currentState!.validate()) {
+      formState.currentState!.save();
+      try {
+        final credential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+                email: emailAddress!, password: password!);
+        return credential;
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          AwesomeDialog(
+                  context: context,
+                  title: 'There\'s no account for this email',
+                  desc: 'if you do not have an account create one',
+                  dialogType: DialogType.warning,
+                  headerAnimationLoop: false)
+              .show();
+        } else if (e.code == 'wrong-password') {
+          AwesomeDialog(
+                  context: context,
+                  title: 'Password or Email is wrong',
+                  desc: 'The Password or the Email is wrong please try again',
+                  dialogType: DialogType.error,
+                  headerAnimationLoop: false)
+              .show();
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,72 +65,85 @@ class _LoginState extends State<Login> {
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Form(
+              key: formState,
               child: Column(
-            children: [
-              TextFormField(
-                onChanged: (newValue) {
-                  emailAddress = newValue;
-                },
-                decoration: const InputDecoration(
-                    border:
-                        OutlineInputBorder(borderSide: BorderSide(width: 1)),
-                    hintText: 'username',
-                    prefixIcon: Icon(Icons.person)),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                onChanged: (newValue) {
-                  password = newValue;
-                },
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(borderSide: BorderSide(width: 1)),
-                  hintText: 'password',
-                  prefixIcon: Icon(Icons.visibility_off),
-                ),
-                obscureText: true,
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(children: [
-                  Text('if you don\'t have an account '),
-                  InkWell(
-                    child: const Text(
-                      'Click here',
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                    onTap: () {
-                      Navigator.pushReplacementNamed(context, Signup.signup);
+                children: [
+                  TextFormField(
+                    onChanged: (newValue) {
+                      emailAddress = newValue;
                     },
-                  )
-                ]),
-              ),
-              Container(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      final credential = await FirebaseAuth.instance
-                          .signInWithEmailAndPassword(
-                              email: emailAddress!, password: password!);
-                      Navigator.pushReplacementNamed(
-                          context, HomePage.homePage);
-                    } on FirebaseAuthException catch (e) {
-                      if (e.code == 'user-not-found') {
-                        print('No user found for that email.');
-                      } else if (e.code == 'wrong-password') {
-                        print('Wrong password provided for that user.');
+                    validator: (value) {
+                      if (value!.length > 100) {
+                        return 'email is too long';
                       }
-                    }
-                  },
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 20),
+                      if (value.length < 4) {
+                        return 'email is too short';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1)),
+                        hintText: 'Email',
+                        prefixIcon: Icon(Icons.alternate_email)),
                   ),
-                ),
-              )
-            ],
-          )),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  TextFormField(
+                    onChanged: (newValue) {
+                      password = newValue;
+                    },
+                    validator: (value) {
+                      if (value!.length > 100) {
+                        return 'password is too long';
+                      }
+                      if (value.length < 6) {
+                        return 'password is too short';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      border:
+                          OutlineInputBorder(borderSide: BorderSide(width: 1)),
+                      hintText: 'password',
+                      prefixIcon: Icon(Icons.visibility_off),
+                    ),
+                    obscureText: true,
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(children: [
+                      Text('if you don\'t have an account '),
+                      InkWell(
+                        child: const Text(
+                          'Click here',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                        onTap: () {
+                          Navigator.pushReplacementNamed(
+                              context, Signup.signup);
+                        },
+                      )
+                    ]),
+                  ),
+                  Container(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        var user = await logIn();
+                        if (user != null) {
+                          Navigator.pushReplacementNamed(
+                              context, HomePage.homePage);
+                        }
+                      },
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  )
+                ],
+              )),
         )
       ],
     ));
