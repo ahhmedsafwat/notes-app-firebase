@@ -1,7 +1,6 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:notes/auth/login.dart';
 import '../cred/add_notes.dart';
 
 class HomePage extends StatefulWidget {
@@ -31,11 +30,32 @@ class _HomePageState extends State<HomePage> {
       'img': 'assets/images/pexels-john-ray-ebora-4581325.jpg'
     },
   ];
+
+  getUser() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      print(user);
+    }
+  }
+
+  @override
+  void initState() {
+    getUser();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home Page"),
+        leading: IconButton(
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            Navigator.pushReplacementNamed(context, Login.login);
+          },
+          icon: const Icon(Icons.exit_to_app),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
