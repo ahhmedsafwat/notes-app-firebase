@@ -14,9 +14,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final userstate = FirebaseAuth.instance.currentUser;
-  if (userstate == null) {
-    isLogin;
-  } else {
+  if (userstate != null) {
     isLogin = true;
   }
 
