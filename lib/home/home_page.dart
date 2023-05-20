@@ -31,19 +31,6 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
-  getUser() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      print(user);
-    }
-  }
-
-  @override
-  void initState() {
-    getUser();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
