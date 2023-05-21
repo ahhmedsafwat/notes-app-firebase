@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:notes/auth/signup.dart';
 
+import '../components/alert.dart';
 import '../home/home_page.dart';
 
 class Login extends StatefulWidget {
@@ -23,12 +24,14 @@ class _LoginState extends State<Login> {
     if (formState.currentState!.validate()) {
       formState.currentState!.save();
       try {
+        showLoading(context);
         final credential = await FirebaseAuth.instance
             .signInWithEmailAndPassword(
                 email: emailAddress!, password: password!);
         return credential;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
+          Navigator.pop(context);
           AwesomeDialog(
                   context: context,
                   title: 'There\'s no account for this email',
@@ -37,6 +40,7 @@ class _LoginState extends State<Login> {
                   headerAnimationLoop: false)
               .show();
         } else if (e.code == 'wrong-password') {
+          Navigator.pop(context);
           AwesomeDialog(
                   context: context,
                   title: 'Password or Email is wrong',

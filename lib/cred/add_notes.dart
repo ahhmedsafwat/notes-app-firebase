@@ -1,4 +1,3 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 
 class AddNotes extends StatefulWidget {
@@ -84,19 +83,7 @@ class _AddNotesState extends State<AddNotes> {
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
                 InkWell(
-                  onTap: () {
-                    AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.success,
-                            animType: AnimType.leftSlide,
-                            title: 'give me a photo',
-                            desc:
-                                'open your camera and take a photo of this beatuiful face',
-                            btnCancelOnPress: () {},
-                            btnOkOnPress: () {},
-                            btnCancelColor: Colors.teal)
-                        .show();
-                  },
+                  onTap: () {},
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
