@@ -1,6 +1,12 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:notes/components/alert.dart';
+import 'package:notes/home/home_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,10 +28,24 @@ class _AddNotesState extends State<AddNotes> {
 
   Reference? ref;
 
+  CollectionReference noteRef = FirebaseFirestore.instance.collection('notes');
+
   addNotes() async {
     var formData = formState.currentState;
     if (formData!.validate()) {
       formData.save();
+      showLoading(context);
+      await ref!.putFile(file!);
+      imageUrl = await ref!.getDownloadURL();
+
+      await noteRef.add({
+        'title': title,
+        'note': note,
+        'imageUrl': imageUrl,
+        'userId': FirebaseAuth.instance.currentUser!.uid
+      });
+
+      Navigator.pushReplacementNamed(context, HomePage.homePage);
     }
   }
 
@@ -129,7 +149,13 @@ class _AddNotesState extends State<AddNotes> {
                       int rand = Random().nextInt(1000000);
                       String imageName =
                           rand.toString() + path.basename(image.path);
+
+                      ref = FirebaseStorage.instance
+                          .ref('images')
+                          .child('$imageName');
                     }
+
+                    Navigator.pop(context);
                   },
                   child: Container(
                     width: double.infinity,
@@ -159,6 +185,8 @@ class _AddNotesState extends State<AddNotes> {
                         await picker.pickImage(source: ImageSource.gallery);
 
                     if (image != null) {}
+
+                    Navigator.pop(context);
                   },
                   child: Container(
                     width: double.infinity,
