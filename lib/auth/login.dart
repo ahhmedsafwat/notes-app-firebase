@@ -135,7 +135,7 @@ class _LoginState extends State<Login> {
                     child: ElevatedButton(
                       onPressed: () async {
                         var user = await logIn();
-                        if (user != null) {
+                        if (user != null && context.mounted) {
                           Navigator.pushReplacementNamed(
                               context, HomePage.homePage);
                         }

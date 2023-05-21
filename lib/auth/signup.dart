@@ -1,6 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:notes/components/alert.dart';
 import 'package:notes/home/home_page.dart';
 
 import 'login.dart';
@@ -21,6 +23,7 @@ class _SignupState extends State<Signup> {
     if (formData!.validate()) {
       formData.save();
       try {
+        showLoading(context);
         final credential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email!,
@@ -29,6 +32,7 @@ class _SignupState extends State<Signup> {
         return credential;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
+          Navigator.pop(context);
           AwesomeDialog(
             context: context,
             title: 'weak password',
@@ -37,6 +41,8 @@ class _SignupState extends State<Signup> {
             btnOkOnPress: () {},
           ).show();
         } else if (e.code == 'email-already-in-use') {
+          Navigator.pop(context);
+
           AwesomeDialog(
             context: context,
             title: 'email already exists',
@@ -170,6 +176,10 @@ class _SignupState extends State<Signup> {
                       onPressed: () async {
                         UserCredential? response = await SignUp();
                         if (response != null) {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .add({'username': username, 'email': email});
+
                           Navigator.pushReplacementNamed(
                               context, HomePage.homePage);
                         }

@@ -1,4 +1,9 @@
+import 'dart:io';
+import 'dart:math';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddNotes extends StatefulWidget {
   const AddNotes({super.key});
@@ -9,6 +14,21 @@ class AddNotes extends StatefulWidget {
 }
 
 class _AddNotesState extends State<AddNotes> {
+  var title, note, imageUrl;
+
+  File? file;
+
+  GlobalKey<FormState> formState = GlobalKey<FormState>();
+
+  Reference? ref;
+
+  addNotes() async {
+    var formData = formState.currentState;
+    if (formData!.validate()) {
+      formData.save();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,53 +36,69 @@ class _AddNotesState extends State<AddNotes> {
         title: const Text('Add Notes'),
       ),
       body: Container(
+        margin: const EdgeInsets.only(top: 20),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Form(
+                  key: formState,
                   child: Column(
-                children: [
-                  TextFormField(
-                    maxLength: 30,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      label: Text('Note Title'),
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.note),
-                    ),
-                  ),
-                  TextFormField(
-                    minLines: 1,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      label: Text('Note'),
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.note),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      showBottomSheet();
-                    },
-                    child: Text('Add Image for your Note'),
-                  ),
-                  ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 100, vertical: 10)),
-                      child: Text(
-                        'Add Note',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall!
-                            .copyWith(color: Colors.white),
-                      ))
-                ],
-              ))
+                    children: [
+                      TextFormField(
+                        onSaved: (newValue) {
+                          title = newValue;
+                        },
+                        maxLength: 30,
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          label: Text('Note Title'),
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.note),
+                        ),
+                      ),
+                      TextFormField(
+                        validator: (value) {
+                          if (value!.length > 255) {
+                            return 'the note can\'t be bigger then 255 letter';
+                          }
+                        },
+                        onSaved: (newValue) {
+                          note = newValue;
+                        },
+                        minLines: 1,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          label: Text('Note'),
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.note),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          showBottomSheet();
+                        },
+                        child: const Text('Add Image for your Note'),
+                      ),
+                      ElevatedButton(
+                          onPressed: () async {
+                            await addNotes();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 100, vertical: 10),
+                          ),
+                          child: Text(
+                            'Add Note',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall!
+                                .copyWith(color: Colors.white),
+                          ))
+                    ],
+                  ))
             ]),
       ),
     );
@@ -73,8 +109,8 @@ class _AddNotesState extends State<AddNotes> {
         context: context,
         builder: (context) {
           return Container(
-            padding: EdgeInsets.all(20),
-            height: 170,
+            padding: const EdgeInsets.all(20),
+            height: 180,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -83,7 +119,18 @@ class _AddNotesState extends State<AddNotes> {
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () async {
+                    final ImagePicker picker = ImagePicker();
+                    XFile? image =
+                        await picker.pickImage(source: ImageSource.camera);
+
+                    if (image != null) {
+                      file = File(image.path);
+                      int rand = Random().nextInt(1000000);
+                      String imageName =
+                          rand.toString() + path.basename(image.path);
+                    }
+                  },
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
@@ -105,7 +152,14 @@ class _AddNotesState extends State<AddNotes> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () async {
+                    final ImagePicker picker = ImagePicker();
+
+                    XFile? image =
+                        await picker.pickImage(source: ImageSource.gallery);
+
+                    if (image != null) {}
+                  },
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
