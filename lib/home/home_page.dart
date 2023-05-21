@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:notes/auth/login.dart';
+import 'package:notes/components/alert.dart';
 import '../cred/add_notes.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,62 +13,58 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List notes = [
-    {
-      'note': 'Read a book for 10 minute without any rests',
-      'img': 'assets/images/pexels-rikka-ameboshi-3358707.jpg'
-    },
-    {
-      'note': 'Read a book for 10 minute without any rests',
-      'img': 'assets/images/pexels-rikka-ameboshi-3358707.jpg'
-    },
-    {
-      'note': 'Read a book for 10 minute without any rests',
-      'img': 'assets/images/pexels-john-ray-ebora-4581325.jpg'
-    },
-    {
-      'note': 'Read a book for 10 minute without any rests',
-      'img': 'assets/images/pexels-john-ray-ebora-4581325.jpg'
-    },
-  ];
+  CollectionReference noteRef = FirebaseFirestore.instance.collection('notes');
+  getUser() async {
+    var user = FirebaseAuth.instance.currentUser;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home Page"),
-        leading: IconButton(
-          onPressed: () async {
-            await FirebaseAuth.instance.signOut();
-            Navigator.pushReplacementNamed(context, Login.login);
-          },
-          icon: const Icon(Icons.exit_to_app),
+        appBar: AppBar(
+          title: const Text("Home Page"),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, AddNotes.addNotes);
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: Container(
-          child: ListView.builder(
-        itemCount: notes.length,
-        itemBuilder: (context, index) {
-          return Dismissible(
-            key: Key('$index'),
-            child: ListNotes(
-              notes: notes[index],
-            ),
-          );
-        },
-      )),
-    );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, AddNotes.addNotes);
+          },
+          child: const Icon(Icons.add),
+        ),
+        body: FutureBuilder(
+          future: noteRef
+              .where('userId',
+                  isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+              .get(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: Text(
+                  'There is no Notes',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              );
+            }
+            if (snapshot.connectionState == ConnectionState.done) {
+              return ListView.builder(
+                itemBuilder: (context, index) {
+                  Map<String, dynamic> data =
+                      snapshot.data!.docs[index].data() as Map<String, dynamic>;
+
+                  return ListNotes(
+                    notes: data,
+                  );
+                },
+                itemCount: snapshot.data?.docs.length,
+              );
+            }
+            return showLoading(context);
+          },
+        ));
   }
 }
 
 class ListNotes extends StatelessWidget {
-  ListNotes({required this.notes});
+  const ListNotes({required this.notes});
   final Map notes;
 
   @override
@@ -75,8 +72,8 @@ class ListNotes extends StatelessWidget {
     return Row(children: [
       Expanded(
           flex: 1,
-          child: Image.asset(
-            notes['img'],
+          child: Image.network(
+            notes['imageUrl'],
             fit: BoxFit.contain,
             height: 100,
           )),
