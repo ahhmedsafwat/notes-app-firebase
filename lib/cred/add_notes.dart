@@ -184,7 +184,15 @@ class _AddNotesState extends State<AddNotes> {
                     XFile? image =
                         await picker.pickImage(source: ImageSource.gallery);
 
-                    if (image != null) {}
+                    if (image != null) {
+                      file = File(image.path);
+                      int rand = Random().nextInt(1000000);
+                      String imageName =
+                          rand.toString() + path.basename(image.path);
+                      ref = FirebaseStorage.instance
+                          .ref('images')
+                          .child(imageName);
+                    }
 
                     Navigator.pop(context);
                   },
