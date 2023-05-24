@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:notes/cred/edit_note.dart';
 import 'package:notes/firebase_options.dart';
 
 import 'auth/login.dart';
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
         },
         AddNotes.addNotes: (context) {
           return const AddNotes();
-        }
+        },
       },
     );
   }

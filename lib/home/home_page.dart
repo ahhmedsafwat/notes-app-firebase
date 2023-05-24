@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
-import 'package:notes/components/alert.dart';
+import 'package:flutter/material.dart';
+import 'package:notes/auth/login.dart';
+import 'package:notes/cred/edit_note.dart';
 import '../cred/add_notes.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,14 +19,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   CollectionReference noteRef = FirebaseFirestore.instance.collection('notes');
-  getUser() async {
-    var user = FirebaseAuth.instance.currentUser;
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushReplacementNamed(context, Login.login);
+                },
+                icon: Icon(Icons.exit_to_app))
+          ],
           title: const Text("Home Page"),
         ),
         floatingActionButton: FloatingActionButton(
@@ -48,11 +57,22 @@ class _HomePageState extends State<HomePage> {
 
             return ListView.builder(
               itemBuilder: (context, index) {
-                Map<String, dynamic> data =
+                var data =
                     snapshot.data!.docs[index].data() as Map<String, dynamic>;
 
-                return ListNotes(
-                  notes: data,
+                return Dismissible(
+                  key: Key('$index'),
+                  onDismissed: (direction) async {
+                    await noteRef.doc(snapshot.data!.docs[index].id).delete();
+                    FirebaseStorage.instance
+                        .refFromURL(snapshot.data!.docs[index]['imageUrl'])
+                        .delete()
+                        .then((value) => print('delete'));
+                  },
+                  child: ListNotes(
+                    notes: data,
+                    docId: snapshot.data!.docs[index].id,
+                  ),
                 );
               },
               itemCount: snapshot.data?.docs.length,
@@ -63,8 +83,9 @@ class _HomePageState extends State<HomePage> {
 }
 
 class ListNotes extends StatelessWidget {
-  const ListNotes({required this.notes});
+  const ListNotes({required this.notes, required this.docId});
   final Map notes;
+  final docId;
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +104,19 @@ class ListNotes extends StatelessWidget {
             'Title',
           ),
           subtitle: Text('${notes['note']}'),
-          trailing: const Icon(Icons.edit),
+          trailing: IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) {
+                  return EditNotes(
+                    docId: docId,
+                    list: notes,
+                  );
+                },
+              ));
+            },
+          ),
         ),
       ),
     ]);

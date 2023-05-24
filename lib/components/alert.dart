@@ -12,7 +12,6 @@ showLoading(context) {
             child: CircularProgressIndicator(),
           ),
         ),
-        actions: [],
       );
     },
   );

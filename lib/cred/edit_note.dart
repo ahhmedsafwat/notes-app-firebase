@@ -12,15 +12,17 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddNotes extends StatefulWidget {
-  const AddNotes({super.key});
+class EditNotes extends StatefulWidget {
+  const EditNotes({super.key, required this.docId, this.list});
   static String addNotes = 'AddNotes';
+  final docId;
+  final list;
 
   @override
-  State<AddNotes> createState() => _AddNotesState();
+  State<EditNotes> createState() => _EditNotesState();
 }
 
-class _AddNotesState extends State<AddNotes> {
+class _EditNotesState extends State<EditNotes> {
   var title, note, imageUrl;
 
   File? file;
@@ -32,28 +34,35 @@ class _AddNotesState extends State<AddNotes> {
   CollectionReference noteRef = FirebaseFirestore.instance.collection('notes');
 
   addNotes() async {
-    if (file == null) {
-      return AwesomeDialog(
-              context: context,
-              title: 'insert phote',
-              desc: 'please insert phote ')
-          .show();
-    }
     var formData = formState.currentState;
-    if (formData!.validate()) {
-      formData.save();
-      showLoading(context);
-      await ref!.putFile(file!);
-      imageUrl = await ref!.getDownloadURL();
+    if (file == null) {
+      var formData = formState.currentState;
+      if (formData!.validate()) {
+        formData.save();
+        showLoading(context);
 
-      await noteRef.add({
-        'title': title,
-        'note': note,
-        'imageUrl': imageUrl,
-        'userId': FirebaseAuth.instance.currentUser!.uid
-      });
+        await noteRef.doc(widget.docId).update({
+          'title': title,
+          'note': note,
+        });
 
-      Navigator.pushReplacementNamed(context, HomePage.homePage);
+        Navigator.pushReplacementNamed(context, HomePage.homePage);
+      }
+    } else {
+      if (formData!.validate()) {
+        formData.save();
+        showLoading(context);
+        await ref!.putFile(file!);
+        imageUrl = await ref!.getDownloadURL();
+
+        await noteRef.doc(widget.docId).update({
+          'title': title,
+          'note': note,
+          'imageUrl': imageUrl,
+        });
+
+        Navigator.pushReplacementNamed(context, HomePage.homePage);
+      }
     }
   }
 
@@ -61,7 +70,7 @@ class _AddNotesState extends State<AddNotes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Notes'),
+        title: const Text('Edit Notes'),
       ),
       body: Container(
         margin: const EdgeInsets.only(top: 20),
@@ -73,6 +82,7 @@ class _AddNotesState extends State<AddNotes> {
                   child: Column(
                     children: [
                       TextFormField(
+                        initialValue: widget.list['title'],
                         onSaved: (newValue) {
                           title = newValue;
                         },
@@ -86,6 +96,7 @@ class _AddNotesState extends State<AddNotes> {
                         ),
                       ),
                       TextFormField(
+                        initialValue: widget.list['note'],
                         validator: (value) {
                           if (value!.length > 255) {
                             return 'the note can\'t be bigger then 255 letter';
@@ -112,7 +123,7 @@ class _AddNotesState extends State<AddNotes> {
                         onPressed: () {
                           showBottomSheet();
                         },
-                        child: const Text('Add Image for your Note'),
+                        child: const Text('Edit the Note\'s image'),
                       ),
                       ElevatedButton(
                           onPressed: () async {
@@ -123,7 +134,7 @@ class _AddNotesState extends State<AddNotes> {
                                 horizontal: 100, vertical: 10),
                           ),
                           child: Text(
-                            'Add Note',
+                            'Edit Note',
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineSmall!
@@ -147,7 +158,7 @@ class _AddNotesState extends State<AddNotes> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'please choose an Image',
+                  'choose an Image',
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
                 InkWell(
