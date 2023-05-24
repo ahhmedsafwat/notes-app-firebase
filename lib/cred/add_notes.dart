@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -31,6 +32,13 @@ class _AddNotesState extends State<AddNotes> {
   CollectionReference noteRef = FirebaseFirestore.instance.collection('notes');
 
   addNotes() async {
+    if (file == null) {
+      return AwesomeDialog(
+              context: context,
+              title: 'insert phote',
+              desc: 'please insert phote ')
+          .show();
+    }
     var formData = formState.currentState;
     if (formData!.validate()) {
       formData.save();
@@ -81,6 +89,9 @@ class _AddNotesState extends State<AddNotes> {
                         validator: (value) {
                           if (value!.length > 255) {
                             return 'the note can\'t be bigger then 255 letter';
+                          }
+                          if (value.isEmpty) {
+                            return 'this field is required';
                           }
                         },
                         onSaved: (newValue) {

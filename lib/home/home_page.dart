@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:notes/components/alert.dart';
 import '../cred/add_notes.dart';
 
@@ -44,20 +45,18 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             }
-            if (snapshot.connectionState == ConnectionState.done) {
-              return ListView.builder(
-                itemBuilder: (context, index) {
-                  Map<String, dynamic> data =
-                      snapshot.data!.docs[index].data() as Map<String, dynamic>;
 
-                  return ListNotes(
-                    notes: data,
-                  );
-                },
-                itemCount: snapshot.data?.docs.length,
-              );
-            }
-            return showLoading(context);
+            return ListView.builder(
+              itemBuilder: (context, index) {
+                Map<String, dynamic> data =
+                    snapshot.data!.docs[index].data() as Map<String, dynamic>;
+
+                return ListNotes(
+                  notes: data,
+                );
+              },
+              itemCount: snapshot.data?.docs.length,
+            );
           },
         ));
   }
