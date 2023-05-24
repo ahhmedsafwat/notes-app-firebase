@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:notes/auth/login.dart';
 import 'package:notes/cred/edit_note.dart';
+import 'package:notes/cred/view_details.dart';
 import '../cred/add_notes.dart';
 
 class HomePage extends StatefulWidget {
@@ -89,36 +90,54 @@ class ListNotes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-          flex: 1,
-          child: Image.network(
-            notes['imageUrl'],
-            fit: BoxFit.contain,
-            height: 100,
-          )),
-      Expanded(
-        flex: 3,
-        child: ListTile(
-          title: const Text(
-            'Title',
-          ),
-          subtitle: Text('${notes['note']}'),
-          trailing: IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) {
-                  return EditNotes(
-                    docId: docId,
-                    list: notes,
-                  );
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) {
+            return ViewDetails(notes: notes);
+          },
+        ));
+      },
+      child: Card(
+        child: Row(children: [
+          Expanded(
+              flex: 1,
+              child: Image.network(
+                notes['imageUrl'],
+                fit: BoxFit.contain,
+                height: 100,
+              )),
+          Expanded(
+            flex: 3,
+            child: ListTile(
+              title: Text(
+                notes['title'],
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
+                maxLines: 1,
+              ),
+              subtitle: Text(
+                '${notes['note']}',
+                style: const TextStyle(fontSize: 15),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) {
+                      return EditNotes(
+                        docId: docId,
+                        list: notes,
+                      );
+                    },
+                  ));
                 },
-              ));
-            },
+              ),
+            ),
           ),
-        ),
+        ]),
       ),
-    ]);
+    );
   }
 }

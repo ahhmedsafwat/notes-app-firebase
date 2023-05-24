@@ -41,12 +41,17 @@ class _EditNotesState extends State<EditNotes> {
         formData.save();
         showLoading(context);
 
-        await noteRef.doc(widget.docId).update({
-          'title': title,
-          'note': note,
-        });
-
-        Navigator.pushReplacementNamed(context, HomePage.homePage);
+        await noteRef
+            .doc(widget.docId)
+            .update({
+              'title': title,
+              'note': note,
+            })
+            .then((value) =>
+                Navigator.pushReplacementNamed(context, HomePage.homePage))
+            .catchError((e) {
+              print(e);
+            });
       }
     } else {
       if (formData!.validate()) {
@@ -55,13 +60,18 @@ class _EditNotesState extends State<EditNotes> {
         await ref!.putFile(file!);
         imageUrl = await ref!.getDownloadURL();
 
-        await noteRef.doc(widget.docId).update({
-          'title': title,
-          'note': note,
-          'imageUrl': imageUrl,
-        });
-
-        Navigator.pushReplacementNamed(context, HomePage.homePage);
+        await noteRef
+            .doc(widget.docId)
+            .update({
+              'title': title,
+              'note': note,
+              'imageUrl': imageUrl,
+            })
+            .then((value) =>
+                Navigator.pushReplacementNamed(context, HomePage.homePage))
+            .catchError((e) {
+              print(e);
+            });
       }
     }
   }
